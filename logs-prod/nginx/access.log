@@ -1,0 +1,3 @@
+172.18.0.1 - - [12/Feb/2025:21:45:33 +0000] "GET /public/ HTTP/1.1" 404 6622 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:135.0) Gecko/20100101 Firefox/135.0"
+172.18.0.1 - - [12/Feb/2025:21:45:37 +0000] "GET / HTTP/1.1" 499 0 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:135.0) Gecko/20100101 Firefox/135.0"
+172.18.0.1 - - [12/Feb/2025:21:45:38 +0000] "GET / HTTP/1.1" 200 39315 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:135.0) Gecko/20100101 Firefox/135.0"
