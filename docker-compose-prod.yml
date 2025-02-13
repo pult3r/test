@@ -15,6 +15,7 @@ services:
       - APP_ENV=production
     depends_on:
       - redis
+      - db
     networks:
       - app-network
 
@@ -46,7 +47,9 @@ services:
       - "3306:3306"
     volumes:
       - dbdata:/var/lib/mysql
-      
+    networks:
+      - app-network
+
   redis:
     image: redis:latest
     container_name: test-redis-prod
@@ -59,6 +62,21 @@ services:
       - ./redis.conf:/usr/local/etc/redis/redis.conf  
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
     restart: always
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: test-phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    networks:
+      - app-network
 
 networks:
   app-network:

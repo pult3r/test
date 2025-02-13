@@ -1,23 +1,38 @@
-version: '3.8'
-
 services:
   app:
-    image: php:8.2-apache
     build:
-      context: .  # Kontekst budowania (katalog, w którym znajduje się Dockerfile)
-      dockerfile: Dockerfile  # Nazwa pliku Dockerfile (domyślnie "Dockerfile")
-    container_name: test_app
-    restart: always
-    working_dir: /var/www/html
+      context: .
+      dockerfile: Dockerfile
+    image: test-app-prod
+    container_name: test-app-prod
+    restart: unless-stopped
+    working_dir: /var/www
     volumes:
-      - /var/www/html/test:/var/www/html
+      - ./:/var/www
+      - ./.env:/var/www/.env
+    environment:
+      - CI_ENVIRONMENT=production
+      - APP_ENV=production
+    depends_on:
+      - redis
+      - db
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: test-nginx-prod
     ports:
       - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro  
+      - ./codeigniter:/var/www/html
+      - ./logs-prod/nginx:/var/log/nginx
     depends_on:
-      - db
-    environment:
-      - APACHE_DOCUMENT_ROOT=/var/www/html/public
-    command: ["bash", "-c", "docker-php-ext-install pdo pdo_mysql && apache2-foreground"]
+      - app
+    networks:
+      - app-network      
 
   db:
     image: mysql:8.0
@@ -31,12 +46,42 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - db_data:/var/lib/mysql
+      - dbdata:/var/lib/mysql
+    networks:
+      - app-network
+
+  redis:
+    image: redis:latest
+    container_name: test-redis-prod
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network  
+    volumes:
+      - ./data-prod/redis:/data 
+      - ./redis.conf:/usr/local/etc/redis/redis.conf  
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    restart: always
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: test-phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
-  db_data:
-
-
-
-
-
+  dbdata:
+    driver: local
